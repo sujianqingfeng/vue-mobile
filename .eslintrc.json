@@ -1,0 +1,6 @@
+{
+  "extends": ["@sujian/vue3-ts"],
+  "rules": {
+    "vue/no-multiple-template-root": "off"
+  }
+}
