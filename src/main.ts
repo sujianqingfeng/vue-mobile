@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
-import 'normalize.css'
-
+import '@unocss/reset/sanitize/sanitize.css'
+import 'uno.css'
 
 import App from './App.vue'
 

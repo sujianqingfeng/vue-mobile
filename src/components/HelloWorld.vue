@@ -3,19 +3,17 @@ defineProps<{ msg: string }>()
 </script>
 
 <template>
-  <div class="container">
-    <h1>{{ msg }}</h1>
+  <div bg-blue inline w-11px>
+    {{ msg }}
   </div>
 
-  <div class="container">
-    <h1>{{ msg }}</h1>
+  <div bg-fuchsia inline>
+    {{ msg }}
   </div>
 </template>
 
 <style scoped>
 .container {
   display: inline-block;
-  width: 375px;
-  background-color: aquamarine;
 }
 </style>

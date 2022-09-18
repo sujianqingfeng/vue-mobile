@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "normalize.css": "^8.0.1",
+    "@unocss/reset": "^0.45.21",
     "vue": "^3.2.37"
   },
   "devDependencies": {
@@ -18,6 +18,7 @@
     "eslint": "^8.23.1",
     "postcss-px-to-viewport-8-plugin": "^1.1.5",
     "typescript": "^4.6.4",
+    "unocss": "^0.45.21",
     "vite": "^3.1.0",
     "vue-tsc": "^0.40.4"
   }
