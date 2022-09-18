@@ -4,6 +4,7 @@ specifiers:
   '@sujian/eslint-config-vue3-ts': ^0.0.17
   '@vitejs/plugin-vue': ^3.1.0
   eslint: ^8.23.1
+  normalize.css: ^8.0.1
   postcss-px-to-viewport-8-plugin: ^1.1.5
   typescript: ^4.6.4
   vite: ^3.1.0
@@ -11,6 +12,7 @@ specifiers:
   vue-tsc: ^0.40.4
 
 dependencies:
+  normalize.css: 8.0.1
   vue: 3.2.39
 
 devDependencies:
@@ -1323,6 +1325,10 @@ packages:
   /natural-compare/1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
+
+  /normalize.css/8.0.1:
+    resolution: {integrity: sha512-qizSNPO93t1YUuUhP22btGOo3chcvDFqFaj2TRybP0DMxkHOCTYwp3n34fel4a31ORXy4m1Xq0Gyqpb5m33qIg==}
+    dev: false
 
   /nth-check/2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
