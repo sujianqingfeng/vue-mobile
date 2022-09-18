@@ -1,6 +1,4 @@
 {
-  "extends": ["@sujian/vue3-ts"],
-  "rules": {
-    "vue/no-multiple-template-root": "off"
-  }
+  "extends": ["@sujian/vue3-ts", "./.eslintrc-auto-import"],
+  "rules": {}
 }

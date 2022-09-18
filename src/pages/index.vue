@@ -1,3 +1,3 @@
 <template>
-  <div>index</div>
+  <nav-header />
 </template>
