@@ -1,3 +1,6 @@
 <template>
-  <nav-header />
+  <div root>
+    <nav-header />
+    <router-view />
+  </div>
 </template>
