@@ -24,6 +24,7 @@
     "src/**/*.vue",
     "components.d.ts",
     "auto-imports.d.ts"
-  ],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  ]
+  // TODO 放开报错 后面研究一下
+  // "references": [{ "path": "./tsconfig.node.json" }]
 }

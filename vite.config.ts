@@ -4,10 +4,12 @@ import Unocss from 'unocss/vite'
 import { presetAttributify, presetUno } from 'unocss'
 import presetIcons from '@unocss/preset-icons'
 import PostcssPxToViewport from 'postcss-px-to-viewport-8-plugin'
-import vue from '@vitejs/plugin-vue'
+import Vue from '@vitejs/plugin-vue'
 import Pages from 'vite-plugin-pages'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
+
+import colors from './src/config/theme-color'
 
 const resolve = (dir) => path.resolve(__dirname, dir)
 
@@ -19,7 +21,9 @@ export default defineConfig({
     }
   },
   plugins: [
-    vue(),
+    Vue({
+      reactivityTransform: true
+    }),
     Unocss({
       inspector: true,
       presets: [presetAttributify(), presetUno(), presetIcons()],
@@ -31,7 +35,11 @@ export default defineConfig({
         colors: {
           primary: 'var(--primary-color)'
         }
-      }
+      },
+      safelist: [
+        ...colors.map((item) => `c-${item.value}`),
+        ...colors.map((item) => `bg-${item.value}`)
+      ]
     }),
     Pages(),
     Components({
@@ -39,7 +47,7 @@ export default defineConfig({
     }),
     AutoImport({
       dts: true,
-      imports: ['vue', 'vue-router'],
+      imports: ['vue', 'vue-router', 'vue/macros'],
       eslintrc: {
         enabled: true
       }
