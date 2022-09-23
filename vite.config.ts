@@ -28,7 +28,7 @@ export default defineConfig({
       inspector: true,
       presets: [presetAttributify(), presetUno(), presetIcons()],
       shortcuts: [
-        ['root', 'selector-[:root]:[--primary-color:#158bb8]'],
+        ['root', 'selector-[:root]:[--primary-color:#ef3473]'],
         { 'flex-center': 'flex justify-center items-center' }
       ],
       theme: {
@@ -47,7 +47,9 @@ export default defineConfig({
     }),
     AutoImport({
       dts: true,
-      imports: ['vue', 'vue-router', 'vue/macros'],
+      imports: ['vue', 'vue-router', 'vue/macros', '@vueuse/core'],
+      dirs: ['src/composables'],
+      vueTemplate: true,
       eslintrc: {
         enabled: true
       }
