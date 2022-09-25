@@ -47,7 +47,15 @@ export default defineConfig({
     }),
     AutoImport({
       dts: true,
-      imports: ['vue', 'vue-router', 'vue/macros', '@vueuse/core'],
+      imports: [
+        'vue',
+        'vue-router',
+        'vue/macros',
+        '@vueuse/core',
+        {
+          '@sujian/utils': ['getLastIndex']
+        }
+      ],
       dirs: ['src/composables'],
       vueTemplate: true,
       eslintrc: {

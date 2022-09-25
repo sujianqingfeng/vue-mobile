@@ -1,3 +1,12 @@
+<route>
+{
+  name: "home",
+  meta: {
+    title:'Home'
+  }
+}
+</route>
+
 <script lang="ts" setup>
 interface Page {
   name: string

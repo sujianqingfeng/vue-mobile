@@ -1,3 +1,12 @@
+<route>
+{
+  name: "theme",
+  meta: {
+    title:'Theme'
+  }
+}
+</route>
+
 <script lang="ts" setup>
 import colors, { Color } from '@/config/theme-color'
 import ThemeItem from './components/ThemeItem.vue'
@@ -32,4 +41,9 @@ const onModeClick = () => {
     :is-check="isCheck(item.value)"
     @click="onColorClick(item)"
   />
+
+  <p c-gray text-center>
+    color from
+    <a c-gray href="http://zhongguose.com/" target="_blank">中国色</a>
+  </p>
 </template>

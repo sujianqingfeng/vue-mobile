@@ -34,6 +34,7 @@
     "extendRef": true,
     "getCurrentInstance": true,
     "getCurrentScope": true,
+    "getLastIndex": true,
     "h": true,
     "ignorableWatch": true,
     "inject": true,

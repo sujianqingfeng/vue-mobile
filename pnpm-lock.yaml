@@ -3,6 +3,7 @@ lockfileVersion: 5.3
 specifiers:
   '@iconify-json/carbon': ^1.1.8
   '@sujian/eslint-config-vue3-ts': ^0.0.17
+  '@sujian/utils': ^1.0.6
   '@types/node': ^18.7.18
   '@unocss/preset-icons': ^0.45.21
   '@unocss/reset': ^0.45.21
@@ -22,6 +23,7 @@ specifiers:
   vue-tsc: ^0.40.4
 
 dependencies:
+  '@sujian/utils': 1.0.6
   '@unocss/reset': 0.45.21
   '@vueuse/core': 9.2.0_vue@3.2.39
   vue: 3.2.39
@@ -252,6 +254,13 @@ packages:
       - supports-color
       - typescript
     dev: true
+
+  /@sujian/utils/1.0.6:
+    resolution: {integrity: sha512-4Un1BdqDO7s1mbaIT81r+WQAY5n675/1Q5LQc84QM7I9CI+mNV2yAb9nT1zOqhnSZ4iezKlPv+0nCDbOClYt8g==}
+    dependencies:
+      currency.js: 2.0.4
+      dayjs: 1.11.5
+    dev: false
 
   /@types/debug/4.1.7:
     resolution: {integrity: sha512-9AonUzyTjXXhEOa0DnqpzZi6VHlqKMswga9EXjpXnnqxwLtdvPPtlO8evrI5D9S6asFRCQ6v+wpiUKbw+vKqyg==}
@@ -920,6 +929,15 @@ packages:
 
   /csstype/2.6.21:
     resolution: {integrity: sha512-Z1PhmomIfypOpoMjRQB70jfvy/wxT50qW08YXO5lMIJkrdq4yOTR+AW7FqutScmB9NkLwxo+jU+kZLbofZZq/w==}
+    dev: false
+
+  /currency.js/2.0.4:
+    resolution: {integrity: sha512-6/OplJYgJ0RUlli74d93HJ/OsKVBi8lB1+Z6eJYS1YZzBuIp4qKKHpJ7ad+GvTlWmLR/hLJOWTykN5Nm8NJ7+w==}
+    engines: {node: '>=4'}
+    dev: false
+
+  /dayjs/1.11.5:
+    resolution: {integrity: sha512-CAdX5Q3YW3Gclyo5Vpqkgpj8fSdLQcRuzfX6mC6Phy0nfJ0eGYOeS7m4mt2plDWLAtA4TqTakvbboHvUxfe4iA==}
     dev: false
 
   /debug/4.3.4:
