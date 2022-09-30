@@ -27,7 +27,7 @@ const onModeClick = () => {
 <template>
   <div class="dark-switch" flex-center p-8>
     <div
-      class="i-carbon-sun dark:i-carbon-moon"
+      class="i-carbon-moon dark:i-carbon-sun"
       text-100px
       dark:c-light
       @click="onModeClick"

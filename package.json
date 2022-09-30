@@ -20,6 +20,7 @@
     "@sujian/eslint-config-vue3-ts": "^0.0.17",
     "@types/node": "^18.7.18",
     "@unocss/preset-icons": "^0.45.21",
+    "@vitejs/plugin-legacy": "^2.2.0",
     "@vitejs/plugin-vue": "^3.1.0",
     "eslint": "^8.23.1",
     "postcss-px-to-viewport-8-plugin": "^1.1.5",

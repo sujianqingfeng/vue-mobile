@@ -5,6 +5,7 @@ import { presetAttributify, presetUno } from 'unocss'
 import presetIcons from '@unocss/preset-icons'
 import PostcssPxToViewport from 'postcss-px-to-viewport-8-plugin'
 import Vue from '@vitejs/plugin-vue'
+import Legacy from '@vitejs/plugin-legacy'
 import Pages from 'vite-plugin-pages'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -61,6 +62,9 @@ export default defineConfig({
       eslintrc: {
         enabled: true
       }
+    }),
+    Legacy({
+      targets: ['defaults', 'not IE 11']
     })
   ],
   css: {
