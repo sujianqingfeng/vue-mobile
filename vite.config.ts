@@ -7,14 +7,16 @@ import PostcssPxToViewport from 'postcss-px-to-viewport-8-plugin'
 import Vue from '@vitejs/plugin-vue'
 import Legacy from '@vitejs/plugin-legacy'
 import Pages from 'vite-plugin-pages'
+import Inspect from 'vite-plugin-inspect'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
+
+import Theme from './plugins/theme'
 
 import colors from './src/config/theme-color'
 
 const resolve = (dir) => path.resolve(__dirname, dir)
 
-// https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
     alias: {
@@ -65,7 +67,9 @@ export default defineConfig({
     }),
     Legacy({
       targets: ['defaults', 'not IE 11']
-    })
+    }),
+    Inspect(),
+    Theme()
   ],
   css: {
     postcss: {
