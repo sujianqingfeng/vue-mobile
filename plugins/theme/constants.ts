@@ -1,3 +1,6 @@
+import path from 'path'
+import { normalizePath } from 'vite'
+
 // const cssLangs = `\\.(css|less|sass|scss|styl|stylus|postcss)($|\\?)`
 const cssLangs = `\\.(scss)($|\\?)`
 
@@ -12,3 +15,9 @@ export const ruleRE = /(\w+-)*\w+:/
 export const cssValueRE = /(\s?[a-z0-9]+\s)*/
 export const safeEmptyRE = /\s?/
 export const importSafeRE = /(\s*!important)?/
+
+export const VITE_PLUGIN_THEME_CLIENT_ENTRY = normalizePath(
+  path.resolve(process.cwd(), 'plugins/theme/client')
+)
+
+export const CLIENT_PUBLIC_PATH = `/${VITE_PLUGIN_THEME_CLIENT_ENTRY}/client.ts`

@@ -33,9 +33,7 @@ export function combineRegExps(decorator = '', separator = '', ...args: any[]) {
   return new RegExp(regString, decorator)
 }
 
-export function extractVariable(code: string) {
-  const colorVariables = ['#eea2a4']
-
+export function extractVariable(code: string, colorVariables: string[]) {
   const cssBlocks = code.match(cssBlockRE)
 
   debug('cssBlocks', cssBlocks)
@@ -85,4 +83,14 @@ export function extractVariable(code: string) {
 
   debug('allExtractedVariables', allExtractedVariables)
   return allExtractedVariables
+}
+
+export function formatCss(s: string) {
+  s = s.replace(/\s*([{}:;,])\s*/g, '$1')
+  s = s.replace(/;\s*;/g, ';')
+  s = s.replace(/,[\s.#\d]*{/g, '{')
+  s = s.replace(/([^\s])\{([^\s])/g, '$1 {\n\t$2')
+  s = s.replace(/([^\s])\}([^\n]*)/g, '$1\n}\n$2')
+  s = s.replace(/([^\s]);([^\s}])/g, '$1;\n\t$2')
+  return s
 }

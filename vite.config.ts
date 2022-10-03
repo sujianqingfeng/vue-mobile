@@ -69,7 +69,9 @@ export default defineConfig({
       targets: ['defaults', 'not IE 11']
     }),
     Inspect(),
-    Theme()
+    Theme({
+      colorVariables: ['#eea2a4']
+    })
   ],
   css: {
     postcss: {

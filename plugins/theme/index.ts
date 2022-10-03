@@ -1,34 +1,87 @@
 import type { Plugin, ResolvedConfig } from 'vite'
 import createDebug from 'debug'
-import { cssLangRE, cssVariableString, VITE_CLIENT_ENTRY } from './constants'
-import { extractVariable } from './utils'
+import path from 'path'
+import {
+  CLIENT_PUBLIC_PATH,
+  cssLangRE,
+  cssVariableString,
+  VITE_CLIENT_ENTRY
+} from './constants'
+import { extractVariable, formatCss } from './utils'
+import injectClientPlugin from './inject-client-plugin'
+
+export interface ViteThemeOptions {
+  colorVariables: string[]
+}
 
 const debug = createDebug('vite-theme')
 
-function Theme(): Plugin {
-  let config: ResolvedConfig
-  return {
-    name: 'vite-theme',
-    enforce: 'post',
-    configResolved(resolveConfig) {
-      config = resolveConfig
+function Theme(opt: ViteThemeOptions): Plugin[] {
+  const options: ViteThemeOptions = Object.assign(
+    {
+      colorVariables: []
     },
-    async transform(code, id) {
-      if (!cssLangRE.test(id)) {
-        return null
-      }
-      debug('id', id)
-      debug('code', code)
+    opt
+  )
 
-      const clientCode = await getClientStyleString(code)
-      debug('clientCode ', clientCode)
+  const { colorVariables } = options
 
-      const extractCssCodeTemplate = extractVariable(clientCode)
-      if (!extractCssCodeTemplate) {
-        return null
+  let config: ResolvedConfig
+  let clientPath = ''
+  let isServer = false
+
+  return [
+    injectClientPlugin({
+      themePluginOptions: options
+    }),
+    {
+      name: 'vite-theme',
+      enforce: 'post',
+      configResolved(resolveConfig) {
+        config = resolveConfig
+        clientPath = JSON.stringify(
+          path.posix.join(config.base, CLIENT_PUBLIC_PATH)
+        )
+        isServer = config.command === 'serve'
+        debug('clientPath', clientPath)
+      },
+      async transform(code, id) {
+        if (!cssLangRE.test(id)) {
+          return null
+        }
+        debug('id', id)
+        debug('code', code)
+
+        const clientCode = await getClientStyleString(code)
+        debug('clientCode ', clientCode)
+
+        const extractCssCodeTemplate = extractVariable(
+          clientCode,
+          colorVariables
+        )
+        if (!extractCssCodeTemplate) {
+          return null
+        }
+
+        if (isServer) {
+          const retCode = [
+            `import { addCssToQueue } from ${clientPath}`,
+            `const themeCssId = ${JSON.stringify(id)}`,
+            `const themeCssStr = ${JSON.stringify(
+              formatCss(extractCssCodeTemplate)
+            )}`,
+            `addCssToQueue(themeCssId, themeCssStr)`,
+            code
+          ]
+
+          return {
+            map: null,
+            code: retCode.join('\n')
+          }
+        }
       }
     }
-  }
+  ]
 }
 
 async function getClientStyleString(code: string) {
