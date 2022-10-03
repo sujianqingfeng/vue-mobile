@@ -80,7 +80,8 @@ export function renderTheme() {
   const styleRenderQueueMap = getGlobalOptions('styleRenderQueueMap')
   const styleDom = getStyleDom(styleTagId)
 
-  let html = styleDom.innerHTML
+  // let html = styleDom.innerHTML
+  let html = ''
 
   for (const [id, css] of styleRenderQueueMap!.entries()) {
     html += css
@@ -88,23 +89,54 @@ export function renderTheme() {
     window[globalField].styleIdMap?.set(id, css)
   }
 
-  replaceCssColors(html, variables)
+  const processCss = replaceCssColors(html, variables)
+  appendCssToDom(styleDom, processCss)
+}
+
+function appendCssToDom(styleDom: HTMLElement, cssText: string) {
+  styleDom.innerHTML = cssText
+  document.body.appendChild(styleDom)
 }
 
 function replaceCssColors(css: string, colors: string[]) {
-  const retCss = css
+  let retCss = css
   const defaultOptions = getGlobalOptions('defaultOptions')
 
   const colorVariables = defaultOptions
     ? defaultOptions.colorVariables || []
     : []
 
-  debug('----------------------', colorVariables)
-  console.log('001111111')
+  colorVariables.forEach((color, index) => {
+    const regStr = `${color
+      .replace(/,/g, ',\\s*')
+      .replace(/\s/g, '')
+      .replace('(', `\\(`)
+      .replace(')', `\\)`)}([\\da-f]{2})?(\\b|\\)|,|\\s)?` // 后面这个暂不知道干什么用的
+    console.log('regStr', regStr)
 
-  colorVariables.forEach((color, index) => {})
+    const reg = new RegExp(regStr, 'ig')
+
+    retCss = retCss.replace(reg, `${colors[index]}$1$2`).replace('$1$2', '')
+  })
+  console.log('retCss', retCss)
 
   return retCss
+}
+
+export function replaceStyleVariables({
+  colorVariables
+}: {
+  colorVariables: string[]
+}) {
+  setGlobalOptions('colorVariables', colorVariables)
+
+  const styleIdMap = getGlobalOptions('styleIdMap')
+  const styleRenderQueueMap = getGlobalOptions('styleRenderQueueMap')
+
+  for (const [id, css] of styleIdMap!.entries()) {
+    styleRenderQueueMap?.set(id, css)
+  }
+  renderTheme()
 }
 
 export function getStyleDom(id: string) {

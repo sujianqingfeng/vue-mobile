@@ -8,8 +8,11 @@
 </route>
 
 <script lang="ts" setup>
+import { replaceStyleVariables } from '../../../../plugins/theme/client/client'
 const onChangeTheme = async () => {
-  console.log('---theme')
+  replaceStyleVariables({
+    colorVariables: ['#5cb3cc', '#584717']
+  })
 }
 </script>
 
@@ -19,7 +22,9 @@ const onChangeTheme = async () => {
       <p class="text">Test</p>
     </div>
 
-    <button @click="onChangeTheme">change theme</button>
+    <div class="btn-container">
+      <button class="btn" @click="onChangeTheme">Change Theme</button>
+    </div>
   </div>
 </template>
 
@@ -32,6 +37,13 @@ const onChangeTheme = async () => {
       font-size: 20px;
       color: coral;
     }
+  }
+
+  .btn-container {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 </style>

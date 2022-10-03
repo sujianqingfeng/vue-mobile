@@ -70,7 +70,7 @@ export default defineConfig({
     }),
     Inspect(),
     Theme({
-      colorVariables: ['#eea2a4']
+      colorVariables: ['#eea2a4', 'coral']
     })
   ],
   css: {
