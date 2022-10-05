@@ -1,5 +1,8 @@
 import createDebug from 'debug'
-import esbuild from 'esbuild'
+import { transform } from 'esbuild'
+import type { TransformOptions } from 'esbuild'
+import type { ResolvedConfig, ESBuildOptions } from 'vite'
+import hashSum from 'hash-sum'
 
 import {
   cssBlockRE,
@@ -8,7 +11,6 @@ import {
   ruleRE,
   safeEmptyRE
 } from './constants'
-import { ResolvedConfig } from 'vite'
 
 const debug = createDebug('vite-theme')
 
@@ -100,14 +102,52 @@ export function formatCss(s: string) {
 }
 
 export async function minifyCss(css: string, config: ResolvedConfig) {
-  const result = await esbuild.transform(css, {
-    loader: 'css',
-    minify: true
-  })
+  try {
+    // vite3 use esbuild to minify css
+    const result = await transform(css, {
+      loader: 'css',
+      target: config.build.cssTarget || undefined,
+      ...resolveEsbuildMinifyOptions(config.esbuild || {})
+    })
 
-  result.warnings?.forEach((warn) => {
-    config.logger.warn(`warnings when minifying css:\n${warn}`)
-  })
+    result.warnings?.forEach((warn) => {
+      config.logger.warn(`vite-theme warnings when minifying css:\n${warn}`)
+    })
 
-  return result.code
+    return result.code
+  } catch (e) {
+    if (e.errors) {
+      e.message = `[vite-theme esbuild css minify] ${e.message}`
+    }
+    throw e
+  }
+}
+
+function resolveEsbuildMinifyOptions(
+  options: ESBuildOptions
+): TransformOptions {
+  const base: TransformOptions = {
+    logLevel: options.logLevel,
+    logLimit: options.logLimit,
+    logOverride: options.logOverride
+  }
+
+  if (
+    options.minifyIdentifiers != null ||
+    options.minifySyntax != null ||
+    options.minifyWhitespace != null
+  ) {
+    return {
+      ...base,
+      minifyIdentifiers: options.minifyIdentifiers ?? true,
+      minifySyntax: options.minifySyntax ?? true,
+      minifyWhitespace: options.minifyWhitespace ?? true
+    }
+  } else {
+    return { ...base, minify: true }
+  }
+}
+
+export function createFileHash(content: string) {
+  return hashSum(content)
 }

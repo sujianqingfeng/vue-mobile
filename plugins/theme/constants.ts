@@ -5,6 +5,7 @@ import { normalizePath } from 'vite'
 const cssLangs = `\\.(scss)($|\\?)`
 
 export const VITE_CLIENT_ENTRY = '/@vite/client'
+// vite3  css-> __vite__css
 export const cssVariableString = `__vite__css = "`
 
 export const cssLangRE = new RegExp(cssLangs)

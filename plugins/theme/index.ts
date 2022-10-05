@@ -1,17 +1,21 @@
 import type { Plugin, ResolvedConfig } from 'vite'
 import createDebug from 'debug'
 import path from 'path'
+import fs from 'fs-extra'
+import colors from 'picocolors'
 import {
   CLIENT_PUBLIC_PATH,
   cssLangRE,
   cssVariableString,
   VITE_CLIENT_ENTRY
 } from './constants'
-import { extractVariable, formatCss, minifyCss } from './utils'
+
+import { createFileHash, extractVariable, formatCss, minifyCss } from './utils'
 import injectClientPlugin from './inject-client-plugin'
 
 export interface ViteThemeOptions {
   colorVariables: string[]
+  fileName?: string
 }
 
 const debug = createDebug('vite-theme')
@@ -19,12 +23,13 @@ const debug = createDebug('vite-theme')
 function Theme(opt: ViteThemeOptions): Plugin[] {
   const options: ViteThemeOptions = Object.assign(
     {
-      colorVariables: []
+      colorVariables: [],
+      fileName: 'app-theme-style'
     },
     opt
   )
 
-  const { colorVariables } = options
+  const { colorVariables, fileName } = options
 
   let config: ResolvedConfig
   let clientPath = ''
@@ -39,7 +44,8 @@ function Theme(opt: ViteThemeOptions): Plugin[] {
     }),
     {
       name: 'vite-theme',
-      enforce: 'post',
+      // build mode: post css is empty
+      // enforce: 'post',
       configResolved(resolveConfig) {
         config = resolveConfig
         clientPath = JSON.stringify(
@@ -97,7 +103,9 @@ function Theme(opt: ViteThemeOptions): Plugin[] {
       // rollup hook
       async writeBundle() {
         const {
-          build: { outDir, assetsDir, minify }
+          root,
+          build: { outDir, assetsDir, minify },
+          logger
         } = config
 
         let extCssString = ''
@@ -106,11 +114,24 @@ function Theme(opt: ViteThemeOptions): Plugin[] {
         }
 
         if (minify) {
-          debug('minify before', extCssString)
           extCssString = await minifyCss(extCssString, config)
         }
 
-        debug('extCssString', extCssString)
+        const cssOutputName = `${fileName}.${createFileHash(extCssString)}.css`
+
+        const cssOutputPath = path.resolve(
+          root,
+          outDir,
+          assetsDir,
+          cssOutputName
+        )
+        fs.writeFileSync(cssOutputPath, extCssString)
+
+        const cssLogOutputPath = path.resolve(outDir, assetsDir, cssOutputName)
+
+        logger.info(
+          colors.green(`[vite-theme] css output path: ${cssLogOutputPath}`)
+        )
       }
     }
   ]

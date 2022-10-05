@@ -76,11 +76,11 @@ export default defineConfig({
   css: {
     postcss: {
       plugins: [
-        // PostcssPxToViewport({
-        //   viewportWidth: 750,
-        //   minPixelValue: 1,
-        //   mediaQuery: false
-        // })
+        PostcssPxToViewport({
+          viewportWidth: 750,
+          minPixelValue: 1,
+          mediaQuery: false
+        })
       ]
     }
   }
