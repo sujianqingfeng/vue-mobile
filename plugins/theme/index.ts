@@ -7,7 +7,7 @@ import {
   cssVariableString,
   VITE_CLIENT_ENTRY
 } from './constants'
-import { extractVariable, formatCss } from './utils'
+import { extractVariable, formatCss, minifyCss } from './utils'
 import injectClientPlugin from './inject-client-plugin'
 
 export interface ViteThemeOptions {
@@ -30,6 +30,9 @@ function Theme(opt: ViteThemeOptions): Plugin[] {
   let clientPath = ''
   let isServer = false
 
+  const styleMap = new Map<string, string>()
+  const extCssSet = new Set<string>()
+
   return [
     injectClientPlugin({
       themePluginOptions: options
@@ -49,10 +52,14 @@ function Theme(opt: ViteThemeOptions): Plugin[] {
         if (!cssLangRE.test(id)) {
           return null
         }
+
         debug('id', id)
         debug('code', code)
 
-        const clientCode = await getClientStyleString(code)
+        const clientCode = isServer
+          ? await getClientStyleString(code)
+          : code.replace('export default', '').replace('"', '')
+
         debug('clientCode ', clientCode)
 
         const extractCssCodeTemplate = extractVariable(
@@ -75,10 +82,35 @@ function Theme(opt: ViteThemeOptions): Plugin[] {
           ]
 
           return {
+            // TODO
             map: null,
             code: retCode.join('\n')
           }
+        } else {
+          // build
+          if (!styleMap.has(id)) {
+            extCssSet.add(extractCssCodeTemplate)
+          }
+          styleMap.set(id, extractCssCodeTemplate)
         }
+      },
+      // rollup hook
+      async writeBundle() {
+        const {
+          build: { outDir, assetsDir, minify }
+        } = config
+
+        let extCssString = ''
+        for (const css of extCssSet) {
+          extCssString += css
+        }
+
+        if (minify) {
+          debug('minify before', extCssString)
+          extCssString = await minifyCss(extCssString, config)
+        }
+
+        debug('extCssString', extCssString)
       }
     }
   ]

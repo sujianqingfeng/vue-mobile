@@ -1,6 +1,7 @@
 import createDebug from 'debug'
+import { AnymatchFn } from 'vite'
 
-const debug = createDebug('vite-theme')
+const debug = createDebug('vite-theme-plugin:client')
 
 export const globalField = '__VITE_THEME__'
 export const styleTagId = '__VITE_PLUGIN_THEME_TAG_ID__'
@@ -30,7 +31,7 @@ const debounceThemeRender = debounce(200, renderTheme)
 
 // iife init
 ;(() => {
-  console.log('init')
+  debug('init client')
 
   if (!window[globalField]) {
     window[globalField] = {
@@ -40,8 +41,6 @@ const debounceThemeRender = debounce(200, renderTheme)
   }
 
   if (!getGlobalOptions('defaultOptions')) {
-    console.log('set defaultOptions', colorPluginOptions)
-
     setGlobalOptions('defaultOptions', colorPluginOptions)
   }
 })()
@@ -68,10 +67,7 @@ export function addCssToQueue(id: string, styleString: string) {
 }
 
 export function renderTheme() {
-  console.log('renderTheme')
-
   const variables = getGlobalOptions('colorVariables')
-  console.log('variables ', variables)
 
   if (!variables) {
     return
@@ -112,14 +108,14 @@ function replaceCssColors(css: string, colors: string[]) {
       .replace(/\s/g, '')
       .replace('(', `\\(`)
       .replace(')', `\\)`)}([\\da-f]{2})?(\\b|\\)|,|\\s)?` // 后面这个暂不知道干什么用的
-    console.log('regStr', regStr)
+    debug('regStr', regStr)
 
     const reg = new RegExp(regStr, 'ig')
 
     retCss = retCss.replace(reg, `${colors[index]}$1$2`).replace('$1$2', '')
   })
-  console.log('retCss', retCss)
 
+  debug('replaceCssColors', retCss)
   return retCss
 }
 
@@ -151,13 +147,11 @@ export function getStyleDom(id: string) {
 }
 
 function debounce(delay: number, fn: (...arg: any[]) => any) {
-  let timer
-  return function (...args) {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const ctx = this
+  let timer: ReturnType<typeof setTimeout>
+  return function (this: any, ...args: any[]) {
     clearTimeout(timer)
-    timer = setTimeout(function () {
-      fn.apply(ctx, args)
+    timer = setTimeout(() => {
+      fn.apply(this, args)
     }, delay)
   }
 }

@@ -1,4 +1,6 @@
 import createDebug from 'debug'
+import esbuild from 'esbuild'
+
 import {
   cssBlockRE,
   cssValueRE,
@@ -6,6 +8,8 @@ import {
   ruleRE,
   safeEmptyRE
 } from './constants'
+import { ResolvedConfig } from 'vite'
+
 const debug = createDebug('vite-theme')
 
 export function getVariablesReg(colors: string[]) {
@@ -93,4 +97,17 @@ export function formatCss(s: string) {
   s = s.replace(/([^\s])\}([^\n]*)/g, '$1\n}\n$2')
   s = s.replace(/([^\s]);([^\s}])/g, '$1;\n\t$2')
   return s
+}
+
+export async function minifyCss(css: string, config: ResolvedConfig) {
+  const result = await esbuild.transform(css, {
+    loader: 'css',
+    minify: true
+  })
+
+  result.warnings?.forEach((warn) => {
+    config.logger.warn(`warnings when minifying css:\n${warn}`)
+  })
+
+  return result.code
 }
