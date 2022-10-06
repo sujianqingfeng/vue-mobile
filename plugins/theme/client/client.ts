@@ -1,5 +1,4 @@
 import createDebug from 'debug'
-import { AnymatchFn } from 'vite'
 
 const debug = createDebug('vite-theme-plugin:client')
 
@@ -24,7 +23,11 @@ declare global {
 }
 
 declare const __COLOR_PLUGIN_OPTIONS__: Options
+declare const __COLOR_PLUGIN_OUTPUT_FILE_NAME__: string
+declare const __PROD__: boolean
 
+const isProd = __PROD__
+const colorPluginOutputFileName = __COLOR_PLUGIN_OUTPUT_FILE_NAME__
 const colorPluginOptions = __COLOR_PLUGIN_OPTIONS__
 
 const debounceThemeRender = debounce(200, renderTheme)
@@ -119,7 +122,7 @@ function replaceCssColors(css: string, colors: string[]) {
   return retCss
 }
 
-export function replaceStyleVariables({
+export async function replaceStyleVariables({
   colorVariables
 }: {
   colorVariables: string[]
@@ -129,10 +132,17 @@ export function replaceStyleVariables({
   const styleIdMap = getGlobalOptions('styleIdMap')
   const styleRenderQueueMap = getGlobalOptions('styleRenderQueueMap')
 
-  for (const [id, css] of styleIdMap!.entries()) {
-    styleRenderQueueMap?.set(id, css)
+  if (isProd) {
+    const cssText = await fetchCss(colorPluginOutputFileName)
+    const styleDom = getStyleDom(styleTagId)
+    const processCss = replaceCssColors(cssText, colorVariables)
+    appendCssToDom(styleDom, processCss)
+  } else {
+    for (const [id, css] of styleIdMap!.entries()) {
+      styleRenderQueueMap?.set(id, css)
+    }
+    renderTheme()
   }
-  renderTheme()
 }
 
 export function getStyleDom(id: string) {
@@ -154,4 +164,28 @@ function debounce(delay: number, fn: (...arg: any[]) => any) {
       fn.apply(this, args)
     }, delay)
   }
+}
+
+function fetchCss(fileName: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+
+    xhr.onload = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        resolve(xhr.responseText)
+      } else {
+        reject(xhr.statusText)
+      }
+    }
+
+    const onReject = (e: ProgressEvent) => {
+      reject(e)
+    }
+
+    xhr.onerror = onReject
+    xhr.ontimeout = onReject
+
+    xhr.open('GET', fileName, true)
+    xhr.send()
+  })
 }

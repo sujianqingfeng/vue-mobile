@@ -18,7 +18,7 @@ const onChangeTheme = async () => {
 
 <template>
   <div class="saas-theme-container">
-    <div class="bg-color">
+    <div class="text-bg-color">
       <p class="text">Test</p>
     </div>
 
@@ -30,7 +30,7 @@ const onChangeTheme = async () => {
 
 <style lang="scss" scoped>
 .saas-theme-container {
-  .bg-color {
+  .text-bg-color {
     background-color: #eea2a4;
     padding: 20px;
     .text {

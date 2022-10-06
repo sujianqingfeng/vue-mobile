@@ -38,101 +38,105 @@ function Theme(opt: ViteThemeOptions): Plugin[] {
   const styleMap = new Map<string, string>()
   const extCssSet = new Set<string>()
 
+  const timestamp = Date.now().toString()
+  const cssOutputName = `${fileName}.${createFileHash(timestamp)}.css`
+
+  const viteThemePlugin: Plugin = {
+    name: 'vite-theme',
+    configResolved(resolveConfig) {
+      config = resolveConfig
+      clientPath = JSON.stringify(
+        path.posix.join(config.base, CLIENT_PUBLIC_PATH)
+      )
+      isServer = config.command === 'serve'
+      debug('clientPath', clientPath)
+    },
+    async transform(code, id) {
+      if (!cssLangRE.test(id)) {
+        return null
+      }
+
+      debug('id', id)
+      debug('code', code)
+
+      const clientCode = isServer
+        ? await getClientStyleString(code)
+        : code.replace('export default', '').replace('"', '')
+
+      debug('clientCode ', clientCode)
+
+      const extractCssCodeTemplate = extractVariable(clientCode, colorVariables)
+      if (!extractCssCodeTemplate) {
+        return null
+      }
+
+      if (isServer) {
+        const retCode = [
+          `import { addCssToQueue } from ${clientPath}`,
+          `const themeCssId = ${JSON.stringify(id)}`,
+          `const themeCssStr = ${JSON.stringify(
+            formatCss(extractCssCodeTemplate)
+          )}`,
+          `addCssToQueue(themeCssId, themeCssStr)`,
+          code
+        ]
+
+        return {
+          // TODO
+          map: null,
+          code: retCode.join('\n')
+        }
+      } else {
+        // build
+        if (!styleMap.has(id)) {
+          extCssSet.add(extractCssCodeTemplate)
+        }
+        styleMap.set(id, extractCssCodeTemplate)
+      }
+    },
+    // rollup hook
+    async writeBundle() {
+      const {
+        root,
+        build: { outDir, assetsDir, minify },
+        logger
+      } = config
+
+      let extCssString = ''
+      for (const css of extCssSet) {
+        extCssString += css
+      }
+
+      if (minify) {
+        extCssString = await minifyCss(extCssString, config)
+      }
+
+      const cssOutputPath = path.resolve(root, outDir, assetsDir, cssOutputName)
+      fs.writeFileSync(cssOutputPath, extCssString)
+
+      const cssLogOutputPath = path.resolve(outDir, assetsDir, cssOutputName)
+
+      logger.info(
+        colors.green(`[vite-theme] css output path: ${cssLogOutputPath}`)
+      )
+    }
+  }
+
   return [
     injectClientPlugin({
-      themePluginOptions: options
+      themePluginOptions: options,
+      colorPluginCssOutputName: cssOutputName
     }),
     {
-      name: 'vite-theme',
       // build mode: post css is empty
-      // enforce: 'post',
-      configResolved(resolveConfig) {
-        config = resolveConfig
-        clientPath = JSON.stringify(
-          path.posix.join(config.base, CLIENT_PUBLIC_PATH)
-        )
-        isServer = config.command === 'serve'
-        debug('clientPath', clientPath)
-      },
-      async transform(code, id) {
-        if (!cssLangRE.test(id)) {
-          return null
-        }
-
-        debug('id', id)
-        debug('code', code)
-
-        const clientCode = isServer
-          ? await getClientStyleString(code)
-          : code.replace('export default', '').replace('"', '')
-
-        debug('clientCode ', clientCode)
-
-        const extractCssCodeTemplate = extractVariable(
-          clientCode,
-          colorVariables
-        )
-        if (!extractCssCodeTemplate) {
-          return null
-        }
-
-        if (isServer) {
-          const retCode = [
-            `import { addCssToQueue } from ${clientPath}`,
-            `const themeCssId = ${JSON.stringify(id)}`,
-            `const themeCssStr = ${JSON.stringify(
-              formatCss(extractCssCodeTemplate)
-            )}`,
-            `addCssToQueue(themeCssId, themeCssStr)`,
-            code
-          ]
-
-          return {
-            // TODO
-            map: null,
-            code: retCode.join('\n')
-          }
-        } else {
-          // build
-          if (!styleMap.has(id)) {
-            extCssSet.add(extractCssCodeTemplate)
-          }
-          styleMap.set(id, extractCssCodeTemplate)
-        }
-      },
-      // rollup hook
-      async writeBundle() {
-        const {
-          root,
-          build: { outDir, assetsDir, minify },
-          logger
-        } = config
-
-        let extCssString = ''
-        for (const css of extCssSet) {
-          extCssString += css
-        }
-
-        if (minify) {
-          extCssString = await minifyCss(extCssString, config)
-        }
-
-        const cssOutputName = `${fileName}.${createFileHash(extCssString)}.css`
-
-        const cssOutputPath = path.resolve(
-          root,
-          outDir,
-          assetsDir,
-          cssOutputName
-        )
-        fs.writeFileSync(cssOutputPath, extCssString)
-
-        const cssLogOutputPath = path.resolve(outDir, assetsDir, cssOutputName)
-
-        logger.info(
-          colors.green(`[vite-theme] css output path: ${cssLogOutputPath}`)
-        )
-      }
+      ...viteThemePlugin,
+      apply: 'build'
+    },
+    {
+      // serve mode
+      ...viteThemePlugin,
+      enforce: 'post',
+      apply: 'serve'
     }
   ]
 }
