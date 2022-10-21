@@ -21,6 +21,10 @@ const pages: Page[] = [
   {
     name: 'Saas-Theme',
     path: '/saas-theme'
+  },
+  {
+    name: 'Drag',
+    path: '/drag'
   }
 ]
 

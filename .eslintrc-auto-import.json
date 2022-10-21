@@ -142,6 +142,7 @@
     "useDevicesList": true,
     "useDisplayMedia": true,
     "useDocumentVisibility": true,
+    "useDrag": true,
     "useDraggable": true,
     "useDropZone": true,
     "useElementBounding": true,
