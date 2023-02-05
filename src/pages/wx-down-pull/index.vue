@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { creteGesture } from './gesture'
 import { createAnimation } from './animation'
+import { transition } from './color-transition'
+
 const mainRef = ref()
 const bottomRef = ref()
 const mainTop = ref(0)
@@ -19,13 +21,69 @@ const toggleThreshold = 200
 
 const canMoveHeight = mainViewHeight - navBarHeight
 
-const mainNavBarOpacity = ref(1)
+const navBarBgColor = ref('#e879f9')
 watch(mainTop, (value) => {
   const threshold = canMoveHeight - toggleThreshold
   if (value > threshold) {
-    const opacity = 1 - (value - threshold) / toggleThreshold / 2 - 0.2
-    mainNavBarOpacity.value = opacity
+    const rate = (value - threshold) / toggleThreshold
+    const bgColor = transition('#e879f9', '#818cf8', rate)
+
+    navBarBgColor.value = bgColor
   }
+})
+
+const dotMinThreshold = 100
+const dotMaxThreshold = 200
+const dotNormalThreshold = 250
+const dotMaxSize = 30
+const dotNormalSize = 20
+const dotGap = 30
+const downPullOpacityThreshold = 300
+
+const dotSize = ref(0)
+const dotsDistance = ref(0)
+const downPullOpacity = ref(1)
+const bottomViewScale = ref(0.75)
+
+const getDotRate = (value: number, end: number, start: number) => {
+  const distance = end - start
+  const offset = Math.min(value - start, distance)
+  const rate = offset / distance
+  return rate
+}
+
+watch(mainTop, (value) => {
+  if (value === 0) {
+    dotsDistance.value = 0
+  }
+  if (value > dotMinThreshold) {
+    const rate = getDotRate(value, dotMaxThreshold, dotMinThreshold)
+    const size = dotMaxSize * rate
+    dotSize.value = size
+  }
+
+  if (value > dotMaxThreshold) {
+    const rate = getDotRate(value, dotNormalThreshold, dotMaxThreshold)
+    const size = dotMaxSize - rate * (dotMaxSize - dotNormalSize)
+    dotSize.value = size
+
+    const gap = dotGap * rate
+    dotsDistance.value = gap
+  }
+
+  if (value > dotNormalThreshold) {
+    const rate = getDotRate(value, downPullOpacityThreshold, dotMaxThreshold)
+    const opacity = 1 - rate
+    downPullOpacity.value = opacity
+
+    const scaleRate = getDotRate(value, canMoveHeight, downPullOpacityThreshold)
+    const scale = 0.75 + scaleRate * 0.25
+    bottomViewScale.value = scale
+  }
+})
+
+const showDownPull = computed(() => {
+  return mainTop.value < downPullOpacityThreshold
 })
 
 let startTouchEvent: TouchEvent | null = null
@@ -41,10 +99,18 @@ const getPoints = (startTouchEvent: TouchEvent, endTouchEvent: TouchEvent) => {
 }
 
 const mainTouchStart = (e: TouchEvent) => {
+  if (!isMainView.value) {
+    bottomTouchStart(e)
+    return
+  }
   startTouchEvent = e
 }
 
 const mainTouchMove = (e: TouchEvent) => {
+  if (!isMainView.value) {
+    bottomTouchMove(e)
+    return
+  }
   const [startX, startY, endX, endY] = getPoints(startTouchEvent!, e)
   const gesture = creteGesture(startX, startY, endX, endY)
   const { isOk, offsetY } = gesture.isFromTopToBottom()
@@ -52,7 +118,6 @@ const mainTouchMove = (e: TouchEvent) => {
   if (!isOk) {
     return
   }
-  console.log('下拉', offsetY)
 
   if (offsetY < moveThreshold) {
     return
@@ -68,6 +133,10 @@ const mainAnimationValueChange = (value: number) => {
 }
 
 const mainTouchEnd = () => {
+  if (!isMainView.value) {
+    bottomTouchEnd()
+    return
+  }
   if (mainTop.value < toggleThreshold) {
     // 恢复原位
     console.log('恢复原位', mainTop.value)
@@ -103,7 +172,6 @@ const bottomTouchMove = (e: TouchEvent) => {
   if (!isOk) {
     return
   }
-  console.log('上拉', offsetY)
 
   if (offsetY < moveThreshold) {
     return
@@ -153,13 +221,18 @@ onMounted(() => {
     <div class="status-bar">status-bar</div>
 
     <div class="main-view-box">
-      <div ref="bottomRef" class="bottom-view">
+      <div ref="bottomRef" class="bottom-view border">
         bottom view
 
         <div class="bottom-nav-bar">bottom nav bar</div>
+        <div v-if="showDownPull" class="pull-loading">
+          <div class="dot dot-left"></div>
+          <div class="dot"></div>
+          <div class="dot dot-right"></div>
+        </div>
       </div>
 
-      <div ref="mainRef" class="main-view bg-blue">
+      <div ref="mainRef" class="main-view">
         <div class="nav-bar border">nav-bar</div>
         <div class="main">main content</div>
       </div>
@@ -182,6 +255,9 @@ onMounted(() => {
       position: absolute;
       width: 100%;
       height: v-bind('mainViewHeight + "px"');
+      transform: v-bind('"scale("+bottomViewScale+")"');
+      transform-origin: top;
+      top: 0;
 
       .bottom-nav-bar {
         height: v-bind('navBarHeight+ "px"');
@@ -189,15 +265,39 @@ onMounted(() => {
         bottom: 0;
         left: 0;
       }
+
+      .pull-loading {
+        height: v-bind('mainTop + "px"');
+        opacity: v-bind('downPullOpacity');
+        position: relative;
+        .dot {
+          width: v-bind('dotSize + "px"');
+          height: v-bind('dotSize + "px"');
+          border-radius: 100%;
+          background-color: wheat;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .dot-left {
+          left: v-bind('"calc(50% - "+dotsDistance+"px)"');
+        }
+        .dot-right {
+          left: v-bind('"calc(50% + "+dotsDistance+"px)"');
+        }
+      }
     }
     .main-view {
       position: absolute;
       top: v-bind('mainTop + "px"');
       width: 100%;
       height: v-bind('mainViewHeight + "px"');
+      background-color: #e879f9;
       .nav-bar {
         height: v-bind('navBarHeight+ "px"');
-        opacity: v-bind('mainNavBarOpacity');
+        background-color: v-bind('navBarBgColor');
       }
     }
   }

@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
-import '@unocss/reset/sanitize/sanitize.css'
 import 'uno.css'
 
+import '@unocss/reset/sanitize/sanitize.css'
+// import '@unocss/reset/normalize.css'
 import './styles/index.scss'
 import router from './router'
 import App from './App.vue'
